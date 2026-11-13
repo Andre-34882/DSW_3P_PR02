@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using DSW_3P_PR02.Data;
-using DSW_3P_PR02.Middleware;
 using DSW_3P_PR02.Repositories;
 using DSW_3P_PR02.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +10,6 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
-builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddScoped<IEventoTecnologicoService, EventoTecnologicoService>();
 
 var persistenceProvider = builder.Configuration["Persistence:Provider"] ?? "SqlServer";
@@ -37,9 +34,6 @@ else
 }
 
 var app = builder.Build();
-
-app.UseExceptionHandler();
-app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {

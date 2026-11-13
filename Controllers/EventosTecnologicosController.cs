@@ -35,8 +35,15 @@ public sealed class EventosTecnologicosController(IEventoTecnologicoService serv
         [FromBody] CreateEventoTecnologicoRequest request,
         CancellationToken cancellationToken)
     {
-        var creado = await service.AgregarAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creado.Id }, creado);
+        try
+        {
+            var creado = await service.AgregarAsync(request, cancellationToken);
+            return CreatedAtAction(nameof(ObtenerPorId), new { id = creado.Id }, creado);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { mensaje = exception.Message });
+        }
     }
 
     //Actualiza todos los datos de un evento tecnológico.
@@ -49,8 +56,15 @@ public sealed class EventosTecnologicosController(IEventoTecnologicoService serv
         [FromBody] UpdateEventoTecnologicoRequest request,
         CancellationToken cancellationToken)
     {
-        var actualizado = await service.ActualizarAsync(id, request, cancellationToken);
-        return actualizado ? NoContent() : NotFound();
+        try
+        {
+            var actualizado = await service.ActualizarAsync(id, request, cancellationToken);
+            return actualizado ? NoContent() : NotFound();
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { mensaje = exception.Message });
+        }
     }
 
     /// <summary>Elimina un evento tecnológico.</summary>
