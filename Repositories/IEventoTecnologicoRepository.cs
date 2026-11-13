@@ -1,12 +1,17 @@
 using DSW_3P_PR02.Models;
 
-namespace DSW_3P_PR01.Repositories;
+namespace DSW_3P_PR02.Repositories;
 
 public interface IEventoTecnologicoRepository
 {
-    List<EventoTecnologico> ObtenerTodas();
-    EventoTecnologico? ObtenerPorId(int id);
-    EventoTecnologico Agregar(EventoTecnologico eventoTecnologico);
-    bool Actualizar(int id, EventoTecnologico eventoTecnologico);
-    bool Eliminar(int id);
+    Task<IReadOnlyList<EventoTecnologico>> ObtenerTodasAsync(CancellationToken cancellationToken);
+    Task<EventoTecnologico?> ObtenerPorIdAsync(int id, CancellationToken cancellationToken);
+    Task<EventoTecnologico> AgregarAsync(
+        EventoTecnologico eventoTecnologico,
+        CancellationToken cancellationToken);
+    Task<bool> ActualizarAsync(
+        int id,
+        EventoTecnologico eventoTecnologico,
+        CancellationToken cancellationToken);
+    Task<bool> EliminarAsync(int id, CancellationToken cancellationToken);
 }

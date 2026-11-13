@@ -1,6 +1,56 @@
-@DSW_3P_PR02_HostAddress = http://localhost:5142
+@baseUrl = http://localhost:5142
+@eventoId = 1
 
-GET {{DSW_3P_PR02_HostAddress}}/weatherforecast/
+### Consultar todos los eventos
+GET {{baseUrl}}/api/eventos
 Accept: application/json
 
-###
+### Consultar un evento
+GET {{baseUrl}}/api/eventos/{{eventoId}}
+Accept: application/json
+
+### Crear evento
+POST {{baseUrl}}/api/eventos
+Content-Type: application/json
+
+{
+  "nombre": "Hackathon de Innovación",
+  "categoria": "Hackaton",
+  "fecha": "2027-03-15T09:00:00-06:00",
+  "lugar": "Centro de Innovación",
+  "cupoMaximo": 120,
+  "activo": true
+}
+
+### Probar validación (cupo no válido)
+POST {{baseUrl}}/api/eventos
+Content-Type: application/json
+
+{
+  "nombre": "Taller de Prueba",
+  "categoria": "Taller",
+  "fecha": "2027-03-15T09:00:00-06:00",
+  "lugar": "Aula 1",
+  "cupoMaximo": 0,
+  "activo": true
+}
+
+### Actualizar evento
+PUT {{baseUrl}}/api/eventos/{{eventoId}}
+Content-Type: application/json
+
+{
+  "nombre": "Hackathon de Innovación Actualizado",
+  "categoria": "Hackaton",
+  "fecha": "2027-03-16T09:00:00-06:00",
+  "lugar": "Centro de Innovación",
+  "cupoMaximo": 150,
+  "activo": true
+}
+
+### Eliminar evento
+DELETE {{baseUrl}}/api/eventos/{{eventoId}}
+
+### Consultar un evento inexistente (404)
+GET {{baseUrl}}/api/eventos/999999
+Accept: application/json

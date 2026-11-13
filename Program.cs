@@ -1,41 +1,53 @@
+using System.Text.Json.Serialization;
+using DSW_3P_PR02.Data;
+using DSW_3P_PR02.Middleware;
+using DSW_3P_PR02.Repositories;
+using DSW_3P_PR02.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+builder.Services.AddScoped<IEventoTecnologicoService, EventoTecnologicoService>();
+
+var persistenceProvider = builder.Configuration["Persistence:Provider"] ?? "SqlServer";
+if (persistenceProvider.Equals("Json", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddSingleton<IEventoTecnologicoRepository, EventoTecnologicoJsonRepository>();
+}
+else if (persistenceProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+{
+    var connectionString = builder.Configuration.GetConnectionString("SqlServerConnection")
+        ?? throw new InvalidOperationException(
+            "Falta configurar ConnectionStrings:SqlServerConnection.");
+
+    builder.Services.AddDbContext<EventosDbContext>(options =>
+        options.UseSqlServer(connectionString));
+    builder.Services.AddScoped<IEventoTecnologicoRepository, EventoTecnologicoSqlRepository>();
+}
+else
+{
+    throw new InvalidOperationException(
+        $"El proveedor de persistencia '{persistenceProvider}' no es válido. Use Json o SqlServer.");
+}
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+        options.SwaggerEndpoint("/openapi/v1.json", "Gestor de Eventos Tecnológicos v1"));
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+app.MapControllers();
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
